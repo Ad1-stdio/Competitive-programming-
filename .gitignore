@@ -39,3 +39,16 @@
 
 # debug information files
 *.dwo
+
+# --- ADD THESE LINES ---
+# Compiled Binaries (The files without .cpp extensions)
+CowSignal
+mixingmilk
+mixingmilk_backup.cpp
+speeding
+speedingticket
+toolong
+
+# VS Code Temp Files
+tempCodeRunnerFile*
+.DS_Store
