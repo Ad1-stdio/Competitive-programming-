@@ -1,0 +1,111 @@
+"""
+Singular Value Decomposition (SVD) from scratch using only NumPy.
+
+Goal: A = U * Σ * Vᵀ
+No np.linalg.svd allowed.
+We’ll build SVD using eigen-decomposition of (AᵀA).
+"""
+
+import numpy as np
+
+
+def svd_manual(A, eps=1e-10):
+    """
+    Compute SVD of A using the identity:
+        eigenvalues(AᵀA) = singular_values(A)^2
+    """
+    A = np.array(A, dtype=float)
+    m, n = A.shape
+
+    # Instead of black-box SVD, we start with the symmetric matrix B = AᵀA
+    Bt = A.T @ A
+
+    # Eigen decomposition of AᵀA gives us V and squared singular values
+    eig_vals, eig_vecs = np.linalg.eigh(Bt)
+
+    # Clean up tiny negatives that show up due to floating point errors
+    eig_vals = np.clip(eig_vals, 0, None)
+
+    # Real singular values = sqrt(eigenvalues)
+    singular_vals = np.sqrt(eig_vals)
+
+    # Sort singular values from largest to smallest
+    order = np.argsort(singular_vals)[::-1]
+    singular_vals = singular_vals[order]
+    V = eig_vecs[:, order]
+
+    # Throw away singular values that are basically zero
+    keep = singular_vals > eps
+    singular_vals = singular_vals[keep]
+    V = V[:, keep]
+
+    r = len(singular_vals)  # numerical rank
+
+    # Build U column by column using the identity: u_i = (A v_i) / σ_i
+    U = np.zeros((m, r))
+    for i in range(r):
+        v = V[:, i]
+        sigma = singular_vals[i]
+        u = A @ v
+        if sigma > eps:
+            u /= sigma
+        # Normalize to avoid accumulating drift / noise
+        norm = np.linalg.norm(u)
+        if norm > 0:
+            u /= norm
+        U[:, i] = u
+
+    Vt = V.T
+    return U, singular_vals, Vt
+
+
+def svd_reconstruct(U, S, Vt):
+    """Rebuild A from U, S, Vᵀ just to verify everything worked."""
+    return U @ np.diag(S) @ Vt
+
+
+def sanity_check(A, U, S, Vt):
+    """Print a few sanity checks — nothing fancy, just enough to trust the result."""
+    A = np.array(A, dtype=float)
+    A_rebuilt = svd_reconstruct(U, S, Vt)
+
+    print("Original shape:", A.shape)
+    print("U shape:", U.shape)
+    print("S length:", len(S))
+    print("Vᵀ shape:", Vt.shape)
+
+    print("\nReconstruction error (Frobenius norm):",
+        np.linalg.norm(A - A_rebuilt))
+
+    print("\nUᵀU (should look like identity):")
+    print(U.T @ U)
+
+    print("\nV Vᵀ (should look like identity):")
+    print(Vt.T @ Vt)
+
+    # Compare singular values with NumPy's official version (optional flex)
+    S_np = np.linalg.svd(A, compute_uv=False)
+    print("\nOur S:", S)
+    print("np.linalg.svd S:", S_np)
+    print("Difference:", np.linalg.norm(S_np - S))
+
+
+if __name__ == "__main__":
+    np.random.seed(0)
+
+    # Tall matrix example
+    A = np.random.randn(6, 3)
+    U, S, Vt = svd_manual(A)
+    sanity_check(A, U, S, Vt)
+
+    # Wide matrix example
+    A2 = np.random.randn(3, 6)
+    U2, S2, Vt2 = svd_manual(A2)
+    sanity_check(A2, U2, S2, Vt2)
+
+    # Low-rank example
+    B = np.random.randn(5, 2)
+    C = np.random.randn(2, 4)
+    A3 = B @ C  # guaranteed rank ≤ 2
+    U3, S3, Vt3 = svd_manual(A3)
+    sanity_check(A3, U3, S3, Vt3)

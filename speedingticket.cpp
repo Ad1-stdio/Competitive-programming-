@@ -7,7 +7,7 @@ int main ()
 {
     int LOR = 100 ;
     int max_l = 0 ;
-//m is the road segment and n is length 
+//m is the road segment 
     int m ;
     cin>>m;
 
