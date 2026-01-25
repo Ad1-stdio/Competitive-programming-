@@ -1,53 +1,26 @@
-#include <iostream>
+#include<iostream>
 #include <vector>
-#include <string>
-#include <set>
 #include <algorithm>
+#include <set>
 
 using namespace std;
 
-int main() {
-    // Read the 3x3 grid
-    vector<string> board(3);
-    for (int i = 0; i < 3; i++) {
-        cin >> board[i];
-    }
+int main()
+{
+    vector<vector<int>> matrix(3);
 
-    // Sets to store unique winners
-    set<char> individual_winners;
-    set<set<char>> team_winners;
-
-    // Helper to extract characters from the 8 possible winning lines
-    vector<set<char>> lines;
-
-    // Rows
-    for (int i = 0; i < 3; i++) {
-        lines.push_back({board[i][0], board[i][1], board[i][2]});
-    }
-
-    // Columns
-    for (int i = 0; i < 3; i++) {
-        lines.push_back({board[0][i], board[1][i], board[2][i]});
-    }
-
-    // Diagonals
-    lines.push_back({board[0][0], board[1][1], board[2][2]});
-    lines.push_back({board[0][2], board[1][1], board[2][0]});
-
-    // Evaluate each line
-    for (const auto& s : lines) {
-        if (s.size() == 1) {
-            // Exactly one unique character: Individual win
-            individual_winners.insert(*s.begin());
-        } else if (s.size() == 2) {
-            // Exactly two unique characters: Team win
-            team_winners.insert(s);
+    for(int i=0;i<3;i++){
+        for(int j=0;j<3;j++){
+            int val;
+            cin>>val;
+            matrix[i].push_back(val);
         }
     }
 
-    // Output results
-    cout << individual_winners.size() << endl;
-    cout << team_winners.size() << endl;
-
+    for(int i=0;i<matrix.size();i++){
+        for(int j=0;j<matrix[i].size();j++){
+            cout << matrix[i][j]<<" ";
+        }
+    }
     return 0;
 }
